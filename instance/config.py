@@ -1,4 +1,4 @@
-from instance import inst_bp
+# from instance import inst_bp
 
 class BaseConfig:
     ENVIRONMENT = 'development'
