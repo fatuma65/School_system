@@ -1,11 +1,8 @@
 from flask import current_app as app
 import jwt
-# from functools import wraps
 from flask import jsonify, request
 
-
 def protected_route(f):
-    # @wraps
     def decorated(*args, **kwargs):
         token = None
         if 'token' in request.headers:
