@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 import psycopg2
 import json
 from App.quizz.model import Quizz
@@ -35,7 +35,7 @@ def create_quizz(current_user):
 
     quizz_n = Quizz(quizz_id, created_by[0], question)
     quizz_n.insert_quizz()
-    
+
     response = {}
     response["message"] = "quizz created successfully"
 

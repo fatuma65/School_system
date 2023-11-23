@@ -1,4 +1,3 @@
-from urllib.parse import urlparse
 import psycopg2
 from flask import current_app as app
 

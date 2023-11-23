@@ -7,7 +7,6 @@ from App.answer.views import answer_bp
 from App.quizz.views import quizz_bp
 from App.grade.views import grade_bp
 from App.auths import auth_bp
-# from instance import inst_bp
 from instance.config import app_config
 
 def create_app(config_name):

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 import psycopg2
 import json
 from App.questions.model import  Question
