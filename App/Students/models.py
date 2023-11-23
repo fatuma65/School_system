@@ -19,14 +19,15 @@ class Student:
         self.last_name = last_name
         self.username = username
         self.email = email
+        self.role = 'student'
         self.password = password
 
     def insert_student(self):
         conn = get_connection()
         cur = conn.cursor()
 
-        sql = (''' INSERT INTO student (student_id, first_name, last_name, username, email, password) VALUES ('{}', '{}', '{}','{}','{}','{}')'''\
-                .format(self.student_id, self.first_name, self.last_name, self.username, self.email,self.password)) 
+        sql = (''' INSERT INTO student (student_id, first_name, last_name, username, email,role, password) VALUES ('{}', '{}','{}','{}','{}','{}','{}')'''\
+                .format(self.student_id, self.first_name, self.last_name, self.username, self.email, self.role, self.password)) 
         cur.execute(sql)
         conn.commit()
         cur.close()

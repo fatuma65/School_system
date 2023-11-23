@@ -9,7 +9,7 @@ import jwt
 import datetime
 from App.auths.database import select_a_teacher
 from flask import current_app as app
-from App.auths.views import protected_route
+from App.helpers import protected_route
 # from App.Teachers import teachers_bp
 
 
@@ -37,9 +37,12 @@ def get_teacher():
 
     return jsonify(teacher_s)
 
-@teachers_bp.route('/teachers', methods=['POST'])
+# Register teachers
+@teachers_bp.route('/teachers/register', methods=['POST'])
 @protected_route
-def create_teacher():
+def register_teacher(current_user):
+    print(current_user)
+
     data = request.data
     data = json.loads(data)
     teacher_id = str(uuid.uuid4())
@@ -47,7 +50,13 @@ def create_teacher():
     last_name = data["last_name"]
     username = data["username"]
     email = data["email"]
+    role = "teacher"
     password = str(data["password"])
+
+    current_user_role = current_user.get('role')
+
+    if current_user_role != 'administrator':
+        return {'error': 'You are not allowed to perform this action'}, 403
 
     if not first_name:
         return {"error": "first name is required"}, 401
@@ -58,7 +67,6 @@ def create_teacher():
         return {"error": "first name is required"}, 401
     if not len(last_name):
         return {"error": "first name is required"}, 401
-
     if not username:
         return {"error": "first name is required"}, 401
     if not email:
@@ -71,7 +79,8 @@ def create_teacher():
         "first_name": first_name,
         "last_name": last_name,
         "username" : username,
-        "email": email
+        "email": email,
+        "role": role,
     }
 
     teacher_s.append(new_teacher)
@@ -94,20 +103,21 @@ def login():
     username = login_teacher["username"]
     password = login_teacher["password"]
 
-    if not username or not password:
-        return {"error":"username and passowrd is required"}
-    
-    teacher_data = select_a_teacher(username)
-    if not username or password:
-        return jsonify({"error":"user information is not found"}), 400
+    # if not username or password:
+    #     return jsonify({"error":"user information is not found"}), 404
    
-    print(teacher_data, "********     ********")
-    if teacher_data[3] == username and check_password_hash(teacher_data[5], password):
-        print("these conditions are matching")
-        print(app.config, "**** app config ***")
+    teacher_data = select_a_teacher(username)
 
-        token = jwt.encode({"user":username, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, app.config['SECRET_KEY'], algorithm='HS256')
-        print(app.config, "**** ***")
+    if not teacher_data:
+        return {"error": "Username or password is incorrrect"}, 400
+    print(teacher_data)
+
+    if teacher_data[3] == username  and check_password_hash(teacher_data[6], password):
+        teacher_id = teacher_data[0]
+        email = teacher_data[4]
+        role = teacher_data[5]
+        print("these conditions are matching")
+
+        token = jwt.encode({"user": { 'username' : username, 'id' : teacher_id, 'email' : email, 'role': role }, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({"message" : "You are now logged in", "token" : token}), 200
     return jsonify({"error" : "Wrong username or password"}), 400
-    

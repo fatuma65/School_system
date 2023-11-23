@@ -1,3 +1,3 @@
 from flask import Blueprint
 
-inst_bp = Blueprint('inst_bp',__name__)
+# inst_bp = Blueprint('inst_bp',__name__)

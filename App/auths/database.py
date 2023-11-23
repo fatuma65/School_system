@@ -2,99 +2,6 @@ from urllib.parse import urlparse
 import psycopg2
 from flask import current_app as app
 
-# class Database:
-
-#     def __init__(self, database_url):
-#         parsed_url = urlparse(database_url)
-#         db = parsed_url[::1]
-#         hostname = parsed_url.hostname
-#         username = parsed_url.username
-#         password = parsed_url.password
-#         port = parsed_url.port
-
-#         self.con = psycopg2.connect(database=db, host=hostname, user=username, pswd=password, port_id=port)
-#         self.con.autocommit = True
-#         self.cursor = self.con.cursor()
-
-#     def create_tables(self):
-
-#         create = (
-#             '''
-#                 CREATE TABLE IF NOT EXISTS administration (
-#                 first_name VARCHAR(20) NOT NULL,
-# #                 last_name VARCHAR(20) NOT NULL,
-# #                 username VARCHAR(30) NOT NUL,
-# #                 email TEXT NOT NULL,
-# #                 password TEXT NOT NULL
-# #                 );
-# #             '''
-# #         )
-# #         for creat in create:
-# #             self.cursor.execute(creat)
-
-# #     def select_user(self):
-# #         sql = (''' SELECT * FROM administration''')
-# #         self.cursor.execute(sql)
-# #         return self.cursor.fetchall()
-
-# # def db_handler():
-# #     obj = Database(app.config['DATABASE_URL'])
-# #     return obj
-
-
-
-# class database:
-#     def __init__(self, hostname, username, dbname, password, port):
-#         self.hostname = hostname
-#         self.username = username
-#         self.dbname = dbname
-#         self.password = password
-#         self.port = port
-        
-#         self.conn = psycopg2.connect(
-#             hostname = 'localhost',
-#             username = 'postgres',
-#             dbname = 'school',
-#             password = '123456789',
-#             port = '5432'
-#         )
-         
-#         self.conn.autocommit = True
-#         self.cursor = self.conn.cursor()
-#     # conn.commit()
-
-#     def create_tables(self):
-
-#         create = (
-#             '''
-#                 CREATE TABLE IF NOT EXISTS administration (
-#                 first_name VARCHAR(20) NOT NULL,
-#                 last_name VARCHAR(20) NOT NULL,
-#                 username VARCHAR(30) NOT NUL,
-#                 email TEXT NOT NULL,
-#                 password TEXT NOT NULL
-#             );
-#             '''
-#             )
-        
-
-#         for cre in create:
-#             self.cursor.execute(cre)
-
-#         self.conn.commit()
-#         # cur.close
-#         # conn.close()
-
-#     def select_admin(self):
-#         sql = (''' SELECT * FROM administration ''')
-#         self.cursor.execute(sql)
-#         return self.cursor.fetchall()
-    
-# def db_handler():
-#     obj = database(app.config['DATABASE_URL'])
-#     # obj = database()
-#     return obj
-
 hostname = 'localhost'
 dbname = 'school'
 username = 'postgres'
@@ -114,10 +21,12 @@ cur = conn.cursor()
 create = (
     """
         CREATE TABLE IF NOT EXISTS adminss (
+        admin_id UUID DEFAULT uuid_generate_v4(),
         first_name VARCHAR(20) NOT NULL,
         last_name VARCHAR(20) NOT NULL,
         username VARCHAR(30) NOT NULL,
         email TEXT NOT NULL,
+        role VARCHAR(20),
         password TEXT NOT NULL);
     """,
     """
@@ -127,6 +36,7 @@ create = (
         last_name VARCHAR(20) NOT NULL,
         username VARCHAR(30) NOT NULL,
         email TEXT NOT NULL,
+        role VARCHAR(20),
         password TEXT NOT NULL
         );
     """,
@@ -137,9 +47,40 @@ create = (
         last_name VARCHAR(20) NOT NULL,
         username VARCHAR(30) NOT NULL,
         email TEXT NOT NULL,
+        role VARCHAR(20),
         password TEXT NOT NULL
         );
-    """  
+    """  ,
+    """
+        CREATE TABLE IF NOT EXISTS questions (
+        quest_id TEXT PRIMARY KEY,
+        created_by TEXT,
+        question TEXT
+        );
+    """ ,
+
+    """
+        CREATE TABLE IF NOT EXISTS answers (
+        ans_id TEXT PRIMARY KEY,
+        answered_by TEXT,
+        answer TEXT
+        );
+    """,
+    """
+        CREATE TABLE IF NOT EXISTS quizzes (
+        quizz_id TEXT PRIMARY KEY,
+        created_by TEXT,
+        question TEXT
+        );
+    """ ,
+    """
+        CREATE TABLE IF NOT EXISTS grades (
+        grade_id TEXT PRIMARY KEY,
+        graded_by TEXT,
+        question_id TEXT,
+        score INTEGER
+        );
+    """ 
 )
 
 for crea in create:

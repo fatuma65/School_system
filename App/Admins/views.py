@@ -8,11 +8,11 @@ from App.auths.database import select_an_admin
 import jwt
 import datetime
 from flask import current_app as app
-
+import uuid
+from App.helpers import protected_route
 # from App.auths.check import check_admin
 
 admin_bp = Blueprint('admin_bp', __name__)
-# signup endpoint for admins
 
 def get_connection():
     conn = psycopg2.connect(
@@ -36,20 +36,22 @@ def get_admin():
 
     return jsonify(admin)
 
-# creating new administrators 
-@admin_bp.route('/admin', methods=['POST'])
-def create_admin():
+# register new administrators 
+@admin_bp.route('/register/admins', methods=['POST'])
+@protected_route
+def create_admin(current_user):
+    print(current_user)
 
     data = request.data
     data = json.loads(data)
+    admin_id = str(uuid.uuid4())
     first_name = data["first_name"]
     last_name = data["last_name"]
     username = data["username"]
     email = data["email"]
+    role = 'teacher'
     password = str(data["password"])
 
-    # if check_admin() == True:
-    #     return jsonify({"error": "Access Denied, please login in as Admin"}), 400
     if not first_name:
         return {"error" : "first name is required"}, 401
     if not last_name:
@@ -60,16 +62,18 @@ def create_admin():
         return {"error" : "email is required"}, 401
 
     new_admin = {
+        "admin_id":str(uuid.uuid4()),
         "first_name": first_name,
         "last_name": last_name,
         "username" : username,
-        "email": email
+        "email": email,
+        "role":role
     }
 
     admin.append(new_admin)
 
     user_password = generate_password_hash(password)
-    user = Admin(first_name, last_name, username, email, user_password)
+    user = Admin(admin_id, first_name, last_name, username, email, user_password)
     # for same in admin:
     #     if same["username"] == username:
     #         return jsonify({"error" : "username already exists"}),400
@@ -83,7 +87,7 @@ def create_admin():
     return  response, 200
 
 # login endpoint for administrators
-@admin_bp.route('/log', methods=['POST'])
+@admin_bp.route('/login/admins', methods=['POST'])
 def login():
     user_info = request.data
     login_info = json.loads(user_info)
@@ -93,8 +97,12 @@ def login():
     if not username or not password:
         return {"error": "username and password is required"}, 401
     
-    user_data = select_an_admin()
-    if user_data[3] == username and check_password_hash(user_data[4], password):
-        token = jwt.encode({'username': username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, app.config['SECRET_KEY'], algorithm='HS256')
+    user_data = select_an_admin(username)
+    if user_data[3] == username and check_password_hash(user_data[6], password):
+        admin_id = user_data[0]
+        email = user_data[4]
+        role = user_data[5]
+
+        token = jwt.encode({ "user" : {'username': username, 'email':email, 'admin_id':admin_id, 'role': role }, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({"message" : "you are logged in", "token" : token}), 200
     return jsonify({"error" : "wrong username and password"}), 400

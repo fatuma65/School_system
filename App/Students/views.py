@@ -8,27 +8,35 @@ from App.auths.database import select_a_student
 import jwt
 import datetime
 from flask import current_app as app
+from App.helpers import protected_route
 
 student_bp = Blueprint('student_bp', __name__)
-# sign up endpoint for students
 students = []
 
 @student_bp.route('/student', methods=['GET'])
 def get_students():
     return jsonify(students)
 
-# creating a new student
-@student_bp.route('/student', methods=['POST'])
-def create_student():
-
+# register a new student
+@student_bp.route('/register/students', methods=['POST'])
+@protected_route
+def create_student(current_user):
+    print(current_user)
+    
     data = json.loads(request.data)
+    student_id = str(uuid.uuid4())
     first_name = data.get("first_name")
     last_name = data.get("last_name")
     username = data.get("username")
     email = data.get("email")
+    role = data.get("role")
     password = data.get("password")
-    student_id = str(uuid.uuid4())
 
+    current_user_role = current_user.get('role')
+
+    if current_user_role != 'administrator':
+        return {"error" : "You are not allowed to perform this action"}, 403
+    
     if not first_name:
         return {"error" : "first name is required"}, 401
     if len(first_name) < 3:
@@ -48,7 +56,8 @@ def create_student():
         "first_name": first_name,
         "last_name": last_name,
         "username": username,
-        "email": email
+        "email": email,
+        "role": role,
         
     }
 
@@ -65,7 +74,7 @@ def create_student():
     return response, 200
 
 # login endpoint for students
-@student_bp.route('/stud', methods=['POST'])
+@student_bp.route('/login/students', methods=['POST'])
 def login():
     student_info = request.data 
     login_info = json.loads(student_info)
@@ -75,8 +84,13 @@ def login():
     if not username or not password:
         return {"error" : "username and password is required"}
     
-    student_data = select_a_student()
-    if student_data[3] == username and check_password_hash(student_data[4], password):
-        token = jwt.encode({"user": username, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, app.config['SECRET_KEY'], algorithm='HS256')
+    student_data = select_a_student(username)
+    print(student_data)
+    if  student_data[3] == username and check_password_hash(student_data[6], password):
+        student_id = student_data[0]
+        email = student_data[4]
+        role = student_data[5]
+        print("the conditions are matching")
+        token = jwt.encode({"user": {'username': username, 'id': student_id, 'email': email, 'role': role}, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2)}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({"message": "You are now logged in", "token" : token}), 200
-    return jsonify({"error": "Wrong username and password"}), 400
+    return jsonify({"error": "Wrong username or password"}), 400
