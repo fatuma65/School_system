@@ -10,8 +10,6 @@ import datetime
 from App.auths.database import select_a_teacher
 from flask import current_app as app
 from App.helpers import protected_route
-# from App.Teachers import teachers_bp
-
 
 teachers_bp = Blueprint('teachers', __name__)
 
@@ -103,8 +101,8 @@ def login():
     username = login_teacher["username"]
     password = login_teacher["password"]
 
-    # if not username or password:
-    #     return jsonify({"error":"user information is not found"}), 404
+    if not username or password:
+        return jsonify({"error":"user information is not found"}), 404
    
     teacher_data = select_a_teacher(username)
 

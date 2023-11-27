@@ -1,5 +1,4 @@
 from flask import current_app as app
-# from App.auths.database import db_handler
 import psycopg2
 
 def get_connection():
